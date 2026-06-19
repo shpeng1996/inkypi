@@ -216,7 +216,15 @@ body {
   padding-top: min(0.3dvh, 0.3dvw);
 }
 
-/* ── Holiday Label ───────────────────────────────────── */
+/* ── Cell Bottom (weather + holiday) ────────────────── */
+
+.cell-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: min(0.5dvh, 0.5dvw);
+  min-width: 0;
+}
 
 .holiday-label {
   font-size: min(3.2dvh, 3.2dvw);
@@ -226,6 +234,8 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 /* ── Weather Row (grid cells) ────────────────────────── */

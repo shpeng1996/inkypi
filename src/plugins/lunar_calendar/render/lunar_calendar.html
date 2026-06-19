@@ -37,18 +37,20 @@
           {{ day.solar_day }}</div>
         <div class="lunar-day{% if not day.in_month %} out-of-month{% endif %}">{{ day.lunar }}</div>
       </div>
-      {% if day.in_month and day.holiday_name %}
-      <div class="holiday-label">{{ day.holiday_name }}</div>
-      {% endif %}
-      {% if display_weather and day.weather %}
-      <div class="weather-row">
-        <img class="weather-icon-img" src="{{ weather_icons[day.weather.type] }}" alt="{{ day.weather.label }}">
-        <div class="weather-temp">
-          <span class="temp-high">{{ day.weather.high }}{{ temperature_unit }}</span>
-          <span class="temp-low">{{ day.weather.low }}{{ temperature_unit }}</span>
+      <div class="cell-bottom">
+        {% if display_weather and day.weather %}
+        <div class="weather-row">
+          <img class="weather-icon-img" src="{{ weather_icons[day.weather.type] }}" alt="{{ day.weather.label }}">
+          <div class="weather-temp">
+            <span class="temp-high">{{ day.weather.high }}{{ temperature_unit }}</span>
+            <span class="temp-low">{{ day.weather.low }}{{ temperature_unit }}</span>
+          </div>
         </div>
+        {% endif %}
+        {% if day.in_month and day.holiday_name %}
+        <div class="holiday-label">{{ day.holiday_name }}</div>
+        {% endif %}
       </div>
-      {% endif %}
     </div>
     {% endfor %}
     {% endfor %}
