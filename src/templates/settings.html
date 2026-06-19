@@ -94,7 +94,34 @@
             const valueDisplay = document.getElementById(`${slider.id}-value`);
             valueDisplay.textContent = parseFloat(slider.value).toFixed(1);
         }
-        document.addEventListener('DOMContentLoaded', populateIntervalFields);
+        async function fetchBattery() {
+            try {
+                const res = await fetch("{{ url_for('settings.battery_status') }}");
+                const data = await res.json();
+                if (!data.available) {
+                    document.getElementById('battery-unavailable').style.display = 'block';
+                    document.getElementById('battery-info').style.display = 'none';
+                    return;
+                }
+                document.getElementById('battery-unavailable').style.display = 'none';
+                document.getElementById('battery-info').style.display = 'block';
+                const pct = data.percent;
+                document.getElementById('battery-percent').textContent = pct.toFixed(1) + '%';
+                document.getElementById('battery-bar').style.width = pct + '%';
+                document.getElementById('battery-bar').style.background = pct > 20 ? '#4caf50' : '#e53935';
+                document.getElementById('battery-voltage').textContent = data.voltage.toFixed(3) + ' V';
+                document.getElementById('battery-current').textContent = data.current_ma.toFixed(1) + ' mA';
+                document.getElementById('battery-power').textContent = data.power_w.toFixed(3) + ' W';
+            } catch (e) {
+                document.getElementById('battery-unavailable').style.display = 'block';
+                document.getElementById('battery-info').style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateIntervalFields();
+            fetchBattery();
+        });
     </script>
 </head>
 <body>
@@ -271,6 +298,43 @@
                             />
                         </div>
                         {% endif %}
+                    </div>
+                </div>
+
+                <div class="collapsible">
+                    <button type="button" class="collapsible-header" onclick="toggleCollapsible(this)">
+                        Battery Status <span class="collapsible-icon">▼</span>
+                    </button>
+                    <div class="settings-container collapsible-content">
+                        <div id="battery-unavailable" style="display:none;">
+                            <p style="color: var(--text-secondary, #888);">Battery status not available on this device.</p>
+                        </div>
+                        <div id="battery-info" style="display:none;">
+                            <div class="form-group" style="align-items: center;">
+                                <label class="form-label" style="min-width: 100px;">Charge:</label>
+                                <div style="flex: 1; max-width: 400px;">
+                                    <div style="background: var(--border-color, #ddd); border-radius: 6px; height: 18px; overflow: hidden;">
+                                        <div id="battery-bar" style="height: 100%; background: #4caf50; width: 0%; transition: width 0.4s;"></div>
+                                    </div>
+                                </div>
+                                <span id="battery-percent" style="margin-left: 10px; font-weight: bold;">--%</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="min-width: 100px;">Voltage:</label>
+                                <span id="battery-voltage">-- V</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="min-width: 100px;">Current:</label>
+                                <span id="battery-current">-- mA</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="min-width: 100px;">Power:</label>
+                                <span id="battery-power">-- W</span>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 8px;">
+                            <button type="button" class="action-button" style="padding: 6px 16px; font-size: 0.9em;" onclick="fetchBattery()">Refresh</button>
+                        </div>
                     </div>
                 </div>
             </div>

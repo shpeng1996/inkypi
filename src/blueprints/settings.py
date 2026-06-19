@@ -6,6 +6,12 @@ import pytz
 import logging
 import io
 
+try:
+    from utils.ina219 import INA219
+    INA219_AVAILABLE = True
+except Exception:
+    INA219_AVAILABLE = False
+
 # Try to import cysystemd for journal reading (Linux only)
 try:
     from cysystemd.reader import JournalReader, JournalOpenMode, Rule
@@ -145,4 +151,25 @@ def download_logs():
     except Exception as e:
         logger.error(f"Error reading logs: {e}")
         return Response(f"Error reading logs: {e}", status=500, mimetype="text/plain")
+
+@settings_bp.route('/api/battery')
+def battery_status():
+    if not INA219_AVAILABLE:
+        return jsonify({"available": False})
+    try:
+        ina = INA219(i2c_bus=1, addr=0x43)
+        voltage = ina.getBusVoltage_V()
+        current_ma = ina.getCurrent_mA()
+        power_w = ina.getPower_W()
+        percent = ina.get_battery_percent()
+        return jsonify({
+            "available": True,
+            "voltage": round(voltage, 3),
+            "current_ma": round(current_ma, 1),
+            "power_w": round(power_w, 3),
+            "percent": round(percent, 1),
+        })
+    except Exception as e:
+        logger.warning(f"Battery read failed: {e}")
+        return jsonify({"available": False})
 
