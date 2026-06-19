@@ -1,5 +1,8 @@
 try:
-    import smbus
+    try:                                                                                                              
+        import smbus2 as smbus                                                                                        
+    except ImportError:                                                                                               
+        import smbus    
     SMBUS_AVAILABLE = True
 except ImportError:
     SMBUS_AVAILABLE = False
