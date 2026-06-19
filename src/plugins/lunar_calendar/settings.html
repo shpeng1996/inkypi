@@ -1,0 +1,168 @@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<div class="form-group">
+    <label class="form-label">Location: </label>
+    <div class="form-group">
+        <span>Latitude </span>
+        <input readonly type="text" id="latitude" name="latitude" class="form-input" />
+    </div>
+    <div class="form-group">
+        <span>Longitude </span>
+        <input readonly type="text" id="longitude" name="longitude" class="form-input" />
+    </div>
+    <button type="button" id="openMap" class="action-button compact">Select Location</button>
+</div>
+
+<div class="form-group">
+    <label for="units" class="form-label">Units:</label>
+    <select id="units" name="units" class="form-input">
+        <option value="metric">Metric (°C)</option>
+        <option value="imperial">Imperial (°F)</option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label for="weekStartDay" class="form-label">Week starts on:</label>
+    <select id="weekStartDay" name="weekStartDay" class="form-input">
+        <option value="0">Sunday</option>
+        <option value="1">Monday</option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label for="monthOffset" class="form-label">Month:</label>
+    <select id="monthOffset" name="monthOffset" class="form-input">
+        <option value="-1">Previous month</option>
+        <option value="0">Current month</option>
+        <option value="1">Next month</option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label for="displayWeather" class="form-label">Weather:</label>
+    <select id="displayWeather" name="displayWeather" class="form-input">
+        <option value="true">Display recent forecast</option>
+        <option value="false">Do not display</option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label for="displayTaiwanHolidays" class="form-label">Taiwan Holidays:</label>
+    <select id="displayTaiwanHolidays" name="displayTaiwanHolidays" class="form-input">
+        <option value="false">Do not display</option>
+        <option value="true">Highlight Taiwan public holidays</option>
+    </select>
+</div>
+
+<div id="mapModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('mapModal')">×</span>
+        <h2 id="modalTitle">Select Location</h2>
+        <div class="separator"></div>
+        <div id="map" style="width: 100%; height: 200px; margin: 10px 0px;"></div>
+        <button id="closeMap" class="action-button">Save</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const OSM_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        const $latitude = document.querySelector('#latitude');
+        const $longitude = document.querySelector('#longitude');
+        const $openMap = document.querySelector('#openMap');
+        const $closeMap = document.querySelector('#closeMap');
+
+        let latitude = 0;
+        let longitude = 0;
+        let zoom = 2.5;
+        let map, marker;
+
+        function hasCoordinates() {
+            return $latitude.value.trim() !== '' && $longitude.value.trim() !== '';
+        }
+
+        function updateSelectedCoordinates(lat, lng) {
+            latitude = Number(lat);
+            longitude = Number(lng);
+            zoom = latitude || longitude ? 4.5 : 2.5;
+        }
+
+        function setCoordinateInputs(lat, lng) {
+            $latitude.value = lat;
+            $longitude.value = lng;
+            updateSelectedCoordinates(lat, lng);
+
+            if (map && marker) {
+                const position = [latitude, longitude];
+                marker.setLatLng(position);
+                map.setView(position, 4.5);
+            }
+        }
+
+        async function setIpLocationIfEmpty() {
+            if (hasCoordinates()) {
+                updateSelectedCoordinates($latitude.value, $longitude.value);
+                return;
+            }
+
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                if (!response.ok) {
+                    throw new Error(`IP location request failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.latitude === undefined || data.longitude === undefined) {
+                    throw new Error('IP location response missing coordinates');
+                }
+
+                setCoordinateInputs(data.latitude, data.longitude);
+            } catch (error) {
+                console.error('Failed to set weather location from IP:', error);
+                updateSelectedCoordinates($latitude.value, $longitude.value);
+            }
+        }
+
+        $openMap.addEventListener('click', () => {
+            updateSelectedCoordinates($latitude.value, $longitude.value);
+            openModal('mapModal')
+            setTimeout(() => {
+                if (!map) {
+                    map = L.map('map').setView([latitude, longitude], zoom);
+                    L.tileLayer(OSM_TILE_URL).addTo(map);
+                    marker = L.marker([latitude, longitude], { draggable: true }).addTo(map);
+
+                    map.on('click', event => {
+                        marker.setLatLng(event.latlng);
+                    });
+                }
+            }, 100);
+        });
+
+        $closeMap.addEventListener('click', () => {
+            const position = marker.getLatLng().wrap();
+            $latitude.value = position.lat;
+            $longitude.value = position.lng;
+            closeModal('mapModal');
+        });
+
+        if (loadPluginSettings) {
+            document.getElementById('latitude').value = pluginSettings.latitude || '';
+            document.getElementById('longitude').value = pluginSettings.longitude || '';
+            document.getElementById('units').value = pluginSettings.units || 'metric';
+            document.getElementById('weekStartDay').value = pluginSettings.weekStartDay || '0';
+            document.getElementById('monthOffset').value = pluginSettings.monthOffset || '0';
+            document.getElementById('displayWeather').value = pluginSettings.displayWeather || 'true';
+            document.getElementById('displayTaiwanHolidays').value = pluginSettings.displayTaiwanHolidays || 'false';
+        } else {
+            document.getElementById('units').value = 'metric';
+            document.getElementById('weekStartDay').value = '0';
+            document.getElementById('monthOffset').value = '0';
+            document.getElementById('displayWeather').value = 'true';
+            document.getElementById('displayTaiwanHolidays').value = 'false';
+        }
+
+        setIpLocationIfEmpty();
+    });
+</script>

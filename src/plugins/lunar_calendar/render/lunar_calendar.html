@@ -1,0 +1,61 @@
+{% extends "plugin.html" %}
+
+{% block content %}
+
+<div class="lunar-calendar">
+  <header class="calendar-header">
+    {% if display_weather and today_weather %}
+    <div class="today-weather">
+      <img class="today-weather-icon" src="{{ weather_icons[today_weather.type] }}" alt="{{ today_weather.label }}">
+      <div class="today-weather-info">
+        <span class="today-weather-label">{{ today_weather.label }}</span>
+        <span class="today-weather-temp">{{ today_weather.high }}{{ temperature_unit }} / {{ today_weather.low }}{{
+          temperature_unit }}</span>
+      </div>
+    </div>
+    {% endif %}
+    <div class="calendar-title-group">
+      <div class="calendar-title"><span class="title-month">{{ title_month }}</span> <span class="title-year">{{ title_year }}</span></div>
+    </div>
+  </header>
+
+  <div class="weekday-row">
+    {% for weekday in weekdays %}
+    <div class="weekday weekday-{{ weekday.key }}">{{ weekday.label }}</div>
+    {% endfor %}
+  </div>
+
+  <div class="month-grid">
+    {% for week in weeks %}
+    {% for day in week %}
+    <div
+      class="day-cell{% if day.in_month %} in-month{% else %} empty{% endif %}{% if day.date == today_iso %} today{% endif %}">
+      {% if day.in_month %}
+      <div class="date-row">
+        <div class="solar-day{% if day.is_sunday or day.is_holiday %} is-holiday{% elif day.is_saturday %} is-saturday{% endif %}">{{ day.solar_day }}</div>
+        <div class="lunar-day">{{ day.lunar }}</div>
+      </div>
+      {% if day.holiday_name %}
+      <div class="holiday-label">{{ day.holiday_name }}</div>
+      {% endif %}
+      {% if display_weather and day.weather %}
+      <div class="weather-row">
+        <img class="weather-icon-img" src="{{ weather_icons[day.weather.type] }}" alt="{{ day.weather.label }}">
+        <div class="weather-temp">
+          <span class="temp-high">{{ day.weather.high }}{{ temperature_unit }}</span>
+          <span class="temp-low">{{ day.weather.low }}{{ temperature_unit }}</span>
+        </div>
+      </div>
+      {% endif %}
+      {% else %}
+      {% if day.solar_day %}
+      <div class="solar-day out-of-month">{{ day.solar_day }}</div>
+      {% endif %}
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,263 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.lunar-calendar {
+  --spectra-white: #ffffff;
+  --spectra-black: #000000;
+  --spectra-red: #d6261f;
+  --spectra-yellow: #ffd733;
+  --spectra-blue: #2457c5;
+  --spectra-green: #2f8f3a;
+
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 17% 5% 1fr;
+  font-family: "Jost";
+  color: var(--spectra-black);
+  background: var(--spectra-black);
+  gap: 0;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+
+.calendar-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: min(1.5dvh, 1.5dvw) min(2.5dvh, 2.5dvw);
+  background: var(--spectra-white);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.today-weather {
+  display: flex;
+  align-items: center;
+  gap: min(1.2dvh, 1.2dvw);
+  flex: 0 0 auto;
+}
+
+.today-weather-icon {
+  width: min(8dvh, 8dvw);
+  height: min(8dvh, 8dvw);
+  flex: 0 0 auto;
+  image-rendering: auto !important;
+}
+
+.today-weather-info {
+  display: flex;
+  flex-direction: column;
+  gap: min(0.4dvh, 0.4dvw);
+}
+
+.today-weather-label {
+  font-size: min(3dvh, 3dvw);
+  font-weight: 700;
+  color: var(--spectra-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.today-weather-temp {
+  font-size: min(2dvh, 2dvw);
+  font-weight: 600;
+  color: var(--spectra-black);
+  white-space: nowrap;
+}
+
+.calendar-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: min(0.2dvh, 0.2dvw);
+  min-width: 0;
+}
+
+.calendar-title {
+  font-size: min(7dvh, 7dvw);
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--spectra-black);
+  display: flex;
+  align-items: baseline;
+  gap: 0.2em;
+}
+
+.title-month {
+  font-weight: 700;
+}
+
+.title-year {
+  font-weight: 400;
+}
+
+/* ── Weekday Row ─────────────────────────────────────── */
+
+.weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--spectra-white);
+  gap: 2px;
+}
+
+.weekday {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  background: var(--spectra-white);
+  color: var(--spectra-black);
+  font-size: min(3.2dvh, 3.2dvw);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  padding-left: min(1dvh, 1dvw);
+  gap: 1px;
+}
+
+.weekday-sun {
+  background: var(--spectra-white);
+  color: var(--spectra-red);
+}
+
+.weekday-mon {
+  background: var(--spectra-white);
+}
+
+.weekday-sat {
+  color: var(--spectra-blue);
+}
+
+/* ── Month Grid ──────────────────────────────────────── */
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 1px;
+  background: var(--spectra-black);
+  min-height: 0;
+  border: 1px solid var(--spectra-black);
+}
+
+.day-cell {
+  min-width: 0;
+  min-height: 0;
+  padding: min(0.9dvh, 0.9dvw) min(1dvh, 1dvw);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  background: var(--spectra-white);
+}
+
+.day-cell.empty {
+  background: var(--spectra-white);
+}
+
+.day-cell.today {
+  outline: min(0.6dvh, 0.6dvw) solid var(--spectra-green);
+  outline-offset: calc(-1 * min(0.6dvh, 0.6dvw));
+}
+
+.day-cell.today .solar-day {
+  color: var(--spectra-green);
+}
+
+/* ── Date Row ────────────────────────────────────────── */
+
+.date-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: min(0.5dvh, 0.5dvw);
+  min-width: 0;
+}
+
+.solar-day {
+  font-size: min(6.5dvh, 6.5dvw);
+  font-weight: 700;
+  line-height: 0.9;
+  color: var(--spectra-black);
+  flex: 0 0 auto;
+}
+
+.solar-day.is-holiday {
+  color: var(--spectra-red);
+}
+
+.solar-day.is-saturday {
+  color: var(--spectra-blue);
+}
+
+.solar-day.out-of-month {
+  color: #b0b0b0;
+}
+
+.lunar-day {
+  font-size: min(3.2dvh, 3.2dvw);
+  line-height: 1.1;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--spectra-red);
+  font-weight: 700;
+  padding-top: min(0.3dvh, 0.3dvw);
+}
+
+/* ── Holiday Label ───────────────────────────────────── */
+
+.holiday-label {
+  font-size: min(3.2dvh, 3.2dvw);
+  font-weight: 700;
+  color: var(--spectra-red);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+}
+
+/* ── Weather Row (grid cells) ────────────────────────── */
+
+.weather-row {
+  display: flex;
+  align-items: center;
+  gap: min(0.7dvh, 0.7dvw);
+  min-width: 0;
+}
+
+.weather-icon-img {
+  width: min(4dvh, 4dvw);
+  height: min(4dvh, 4dvw);
+  flex: 0 0 auto;
+  image-rendering: auto !important;
+}
+
+.weather-temp {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: min(1.8dvh, 1.8dvw);
+}
+
+.temp-high {
+  color: var(--spectra-red);
+}
+
+.temp-low {
+  color: var(--spectra-blue);
+}

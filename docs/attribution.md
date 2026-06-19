@@ -75,3 +75,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
+
+## Vendored Libraries
+| Name | License | Notes |
+|---------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| [python-lunardate](https://github.com/lidaobing/python-lunardate) | GPL-3.0 | `src/plugins/lunar_calendar/lunardate.py` is vendored from upstream. It supports Chinese lunar calendar years 1900 through 2099. |
