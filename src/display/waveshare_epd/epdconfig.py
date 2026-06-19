@@ -44,7 +44,7 @@ class RaspberryPi:
     DC_PIN   = 25
     CS_PIN   = 8
     BUSY_PIN = 24
-    PWR_PIN  = 18
+    PWR_PIN  = 27
     MOSI_PIN = 10
     SCLK_PIN = 11
 
@@ -171,7 +171,7 @@ class JetsonNano:
     DC_PIN   = 25
     CS_PIN   = 8
     BUSY_PIN = 24
-    PWR_PIN  = 18
+    PWR_PIN  = 27
 
     def __init__(self):
         import ctypes
@@ -240,7 +240,7 @@ class SunriseX3:
     DC_PIN   = 25
     CS_PIN   = 8
     BUSY_PIN = 24
-    PWR_PIN  = 18
+    PWR_PIN  = 27
     Flag     = 0
 
     def __init__(self):
