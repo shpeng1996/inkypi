@@ -33,15 +33,6 @@
 </div>
 
 <div class="form-group">
-    <label for="monthOffset" class="form-label">Month:</label>
-    <select id="monthOffset" name="monthOffset" class="form-input">
-        <option value="-1">Previous month</option>
-        <option value="0">Current month</option>
-        <option value="1">Next month</option>
-    </select>
-</div>
-
-<div class="form-group">
     <label for="displayWeather" class="form-label">Weather:</label>
     <select id="displayWeather" name="displayWeather" class="form-input">
         <option value="true">Display recent forecast</option>
@@ -154,13 +145,11 @@
             document.getElementById('longitude').value = pluginSettings.longitude || '';
             document.getElementById('units').value = pluginSettings.units || 'metric';
             document.getElementById('weekStartDay').value = pluginSettings.weekStartDay || '0';
-            document.getElementById('monthOffset').value = pluginSettings.monthOffset || '0';
             document.getElementById('displayWeather').value = pluginSettings.displayWeather || 'true';
             document.getElementById('displayTaiwanHolidays').value = pluginSettings.displayTaiwanHolidays || 'true';
         } else {
             document.getElementById('units').value = 'metric';
             document.getElementById('weekStartDay').value = '0';
-            document.getElementById('monthOffset').value = '0';
             document.getElementById('displayWeather').value = 'true';
             document.getElementById('displayTaiwanHolidays').value = 'true';
         }

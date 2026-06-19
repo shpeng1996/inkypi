@@ -78,8 +78,6 @@ class LunarCalendar(BasePlugin):
         timezone = device_config.get_config("timezone", default="Asia/Taipei")
         tz = pytz.timezone(timezone)
         today = datetime.now(tz).date()
-        month_offset = self.parse_month_offset(settings.get("monthOffset", 0))
-        target_month = self.shift_month(today, month_offset)
         units = self.parse_units(settings.get("units", "metric"))
         week_start_day = self.parse_week_start_day(settings.get("weekStartDay", 0))
 
@@ -97,17 +95,17 @@ class LunarCalendar(BasePlugin):
         holiday_dates = set()
         if settings.get("displayTaiwanHolidays", "true") == "true":
             try:
-                holiday_dates = self.fetch_taiwan_holidays(target_month.year)
+                holiday_dates = self.fetch_taiwan_holidays(today.year)
             except Exception as e:
                 logger.warning(f"Failed to fetch Taiwan holidays: {e}")
 
         weeks = self.build_month_weeks(
-            target_month.year, target_month.month, week_start_day, weather_by_date, holiday_dates
+            today.year, today.month, week_start_day, weather_by_date, holiday_dates
         )
 
         template_params = {
-            "title_month": target_month.strftime("%B"),
-            "title_year": target_month.strftime("%Y"),
+            "title_month": today.strftime("%B"),
+            "title_year": today.strftime("%Y"),
             "today_iso": today.isoformat(),
             "weekdays": self.rotate_weekdays(week_start_day),
             "weeks": weeks,
