@@ -1,5 +1,7 @@
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <div class="form-group">
     <label class="form-label">Location: </label>
@@ -50,8 +52,8 @@
 <div class="form-group">
     <label for="displayTaiwanHolidays" class="form-label">Taiwan Holidays:</label>
     <select id="displayTaiwanHolidays" name="displayTaiwanHolidays" class="form-input">
-        <option value="false">Do not display</option>
         <option value="true">Highlight Taiwan public holidays</option>
+        <option value="false">Do not display</option>
     </select>
 </div>
 
@@ -154,13 +156,13 @@
             document.getElementById('weekStartDay').value = pluginSettings.weekStartDay || '0';
             document.getElementById('monthOffset').value = pluginSettings.monthOffset || '0';
             document.getElementById('displayWeather').value = pluginSettings.displayWeather || 'true';
-            document.getElementById('displayTaiwanHolidays').value = pluginSettings.displayTaiwanHolidays || 'false';
+            document.getElementById('displayTaiwanHolidays').value = pluginSettings.displayTaiwanHolidays || 'true';
         } else {
             document.getElementById('units').value = 'metric';
             document.getElementById('weekStartDay').value = '0';
             document.getElementById('monthOffset').value = '0';
             document.getElementById('displayWeather').value = 'true';
-            document.getElementById('displayTaiwanHolidays').value = 'false';
+            document.getElementById('displayTaiwanHolidays').value = 'true';
         }
 
         setIpLocationIfEmpty();

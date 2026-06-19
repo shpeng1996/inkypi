@@ -12,10 +12,10 @@ body {
 .lunar-calendar {
   --spectra-white: #ffffff;
   --spectra-black: #000000;
-  --spectra-red: #d6261f;
-  --spectra-yellow: #ffd733;
-  --spectra-blue: #2457c5;
-  --spectra-green: #2f8f3a;
+  --spectra-red: #ff0000;
+  --spectra-yellow: #ffff00;
+  --spectra-blue: #0000ff;
+  --spectra-green: #00ff00;
 
   width: 100%;
   height: 100%;
@@ -96,6 +96,7 @@ body {
 
 .title-month {
   font-weight: 700;
+  padding-left: 1dvh;
 }
 
 .title-year {
@@ -135,7 +136,7 @@ body {
 }
 
 .weekday-sat {
-  color: var(--spectra-blue);
+  color: var(--spectra-red);
 }
 
 /* ── Month Grid ──────────────────────────────────────── */
@@ -166,12 +167,7 @@ body {
 }
 
 .day-cell.today {
-  outline: min(0.6dvh, 0.6dvw) solid var(--spectra-green);
-  outline-offset: calc(-1 * min(0.6dvh, 0.6dvw));
-}
-
-.day-cell.today .solar-day {
-  color: var(--spectra-green);
+  background: var(--spectra-yellow);
 }
 
 /* ── Date Row ────────────────────────────────────────── */
@@ -197,10 +193,14 @@ body {
 }
 
 .solar-day.is-saturday {
-  color: var(--spectra-blue);
+  color: var(--spectra-red);
 }
 
 .solar-day.out-of-month {
+  color: #b0b0b0;
+}
+
+.lunar-day.out-of-month {
   color: #b0b0b0;
 }
 
@@ -211,7 +211,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--spectra-red);
+  color: var(--spectra-black);
   font-weight: 700;
   padding-top: min(0.3dvh, 0.3dvw);
 }
@@ -238,8 +238,8 @@ body {
 }
 
 .weather-icon-img {
-  width: min(4dvh, 4dvw);
-  height: min(4dvh, 4dvw);
+  width: min(6dvh, 6dvw);
+  height: min(6dvh, 6dvw);
   flex: 0 0 auto;
   image-rendering: auto !important;
 }
@@ -251,13 +251,13 @@ body {
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
-  font-size: min(1.8dvh, 1.8dvw);
+  font-size: min(2.2dvh, 2.2dvw);
 }
 
 .temp-high {
-  color: var(--spectra-red);
+  color: var(--spectra-black);
 }
 
 .temp-low {
-  color: var(--spectra-blue);
+  color: var(--spectra-black);
 }

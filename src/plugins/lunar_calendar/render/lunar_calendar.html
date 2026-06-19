@@ -15,7 +15,8 @@
     </div>
     {% endif %}
     <div class="calendar-title-group">
-      <div class="calendar-title"><span class="title-month">{{ title_month }}</span> <span class="title-year">{{ title_year }}</span></div>
+      <div class="calendar-title"><span class="title-month">{{ title_month }}</span> <span class="title-year">{{
+          title_year }}</span></div>
     </div>
   </header>
 
@@ -29,13 +30,14 @@
     {% for week in weeks %}
     {% for day in week %}
     <div
-      class="day-cell{% if day.in_month %} in-month{% else %} empty{% endif %}{% if day.date == today_iso %} today{% endif %}">
-      {% if day.in_month %}
+      class="day-cell{% if not day.in_month %} empty{% endif %}{% if day.in_month and day.date == today_iso %} today{% endif %}">
       <div class="date-row">
-        <div class="solar-day{% if day.is_sunday or day.is_holiday %} is-holiday{% elif day.is_saturday %} is-saturday{% endif %}">{{ day.solar_day }}</div>
-        <div class="lunar-day">{{ day.lunar }}</div>
+        <div
+          class="solar-day{% if not day.in_month %} out-of-month{% elif day.is_sunday or day.is_holiday %} is-holiday{% elif day.is_saturday %} is-saturday{% endif %}">
+          {{ day.solar_day }}</div>
+        <div class="lunar-day{% if not day.in_month %} out-of-month{% endif %}">{{ day.lunar }}</div>
       </div>
-      {% if day.holiday_name %}
+      {% if day.in_month and day.holiday_name %}
       <div class="holiday-label">{{ day.holiday_name }}</div>
       {% endif %}
       {% if display_weather and day.weather %}
@@ -46,11 +48,6 @@
           <span class="temp-low">{{ day.weather.low }}{{ temperature_unit }}</span>
         </div>
       </div>
-      {% endif %}
-      {% else %}
-      {% if day.solar_day %}
-      <div class="solar-day out-of-month">{{ day.solar_day }}</div>
-      {% endif %}
       {% endif %}
     </div>
     {% endfor %}

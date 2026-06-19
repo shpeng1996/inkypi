@@ -1,7 +1,7 @@
 import calendar
 import logging
+import os
 from datetime import date, datetime, timedelta
-from urllib.parse import quote
 
 import icalendar
 import pytz
@@ -45,90 +45,22 @@ LUNAR_MONTHS = ["正", "二", "三", "四", "五", "六", "七", "八", "九", "
 LUNAR_DAY_PREFIXES = ["初", "十", "廿", "卅"]
 LUNAR_DAY_DIGITS = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
 
-# SVG weather icons using Spectra6 palette
-def _svg_uri(svg: str) -> str:
-    return "data:image/svg+xml," + quote(svg, safe="")
+_WEATHER_ICONS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "weather", "icons")
 
-_SUN_BODY = (
-    '<circle cx="24" cy="24" r="8" fill="#ffd733" stroke="#000" stroke-width="2"/>'
-    '<line x1="24" y1="4" x2="24" y2="10" stroke="#000" stroke-width="2" stroke-linecap="round"/>'
-    '<line x1="24" y1="38" x2="24" y2="44" stroke="#000" stroke-width="2" stroke-linecap="round"/>'
-    '<line x1="4" y1="24" x2="10" y2="24" stroke="#000" stroke-width="2" stroke-linecap="round"/>'
-    '<line x1="38" y1="24" x2="44" y2="24" stroke="#000" stroke-width="2" stroke-linecap="round"/>'
-    '<line x1="8.7" y1="8.7" x2="12.9" y2="12.9" stroke="#000" stroke-width="2" stroke-linecap="round"/>'
-    '<line x1="35.1" y1="35.1" x2="39.3" y2="39.3" stroke="#000" stroke-width="2" stroke-linecap="round"/>'
-    '<line x1="8.7" y1="39.3" x2="12.9" y2="35.1" stroke="#000" stroke-width="2" stroke-linecap="round"/>'
-    '<line x1="35.1" y1="12.9" x2="39.3" y2="8.7" stroke="#000" stroke-width="2" stroke-linecap="round"/>'
-)
+WEATHER_TYPE_TO_ICON = {
+    "sunny": "01d",
+    "partly-cloudy": "02d",
+    "cloudy": "04d",
+    "rain-light": "51d",
+    "rain": "53d",
+    "rain-heavy": "09d",
+    "snow": "13d",
+    "storm": "11d",
+}
 
-_CLOUD_BODY = (
-    '<ellipse cx="30" cy="30" rx="14" ry="9" fill="#2457c5" stroke="#000" stroke-width="2"/>'
-    '<circle cx="22" cy="28" r="8" fill="#2457c5" stroke="#000" stroke-width="2"/>'
-    '<circle cx="30" cy="24" r="9" fill="#2457c5" stroke="#000" stroke-width="2"/>'
-    '<rect x="16" y="28" width="28" height="10" fill="#2457c5"/>'
-)
-
-_DARK_CLOUD_BODY = (
-    '<ellipse cx="30" cy="30" rx="14" ry="9" fill="#000" stroke="#000" stroke-width="2"/>'
-    '<circle cx="22" cy="28" r="8" fill="#000" stroke="#000" stroke-width="2"/>'
-    '<circle cx="30" cy="24" r="9" fill="#000" stroke="#000" stroke-width="2"/>'
-    '<rect x="16" y="28" width="28" height="10" fill="#000"/>'
-)
-
-_RAIN_DROPS_2 = (
-    '<line x1="20" y1="40" x2="17" y2="46" stroke="#2457c5" stroke-width="2.5" stroke-linecap="round"/>'
-    '<line x1="30" y1="40" x2="27" y2="46" stroke="#2457c5" stroke-width="2.5" stroke-linecap="round"/>'
-)
-
-_RAIN_DROPS_3 = (
-    '<line x1="17" y1="40" x2="14" y2="46" stroke="#2457c5" stroke-width="2.5" stroke-linecap="round"/>'
-    '<line x1="26" y1="40" x2="23" y2="46" stroke="#2457c5" stroke-width="2.5" stroke-linecap="round"/>'
-    '<line x1="35" y1="40" x2="32" y2="46" stroke="#2457c5" stroke-width="2.5" stroke-linecap="round"/>'
-)
-
-_RAIN_DROPS_4 = (
-    '<line x1="14" y1="40" x2="11" y2="47" stroke="#fff" stroke-width="3" stroke-linecap="round"/>'
-    '<line x1="22" y1="40" x2="19" y2="47" stroke="#fff" stroke-width="3" stroke-linecap="round"/>'
-    '<line x1="30" y1="40" x2="27" y2="47" stroke="#fff" stroke-width="3" stroke-linecap="round"/>'
-    '<line x1="38" y1="40" x2="35" y2="47" stroke="#fff" stroke-width="3" stroke-linecap="round"/>'
-)
-
-def _snow_flake(cx, cy):
-    return (
-        f'<line x1="{cx}" y1="{cy-5}" x2="{cx}" y2="{cy+5}" stroke="#2457c5" stroke-width="2" stroke-linecap="round"/>'
-        f'<line x1="{cx-5}" y1="{cy}" x2="{cx+5}" y2="{cy}" stroke="#2457c5" stroke-width="2" stroke-linecap="round"/>'
-        f'<line x1="{cx-3}" y1="{cy-3}" x2="{cx+3}" y2="{cy+3}" stroke="#2457c5" stroke-width="2" stroke-linecap="round"/>'
-        f'<line x1="{cx+3}" y1="{cy-3}" x2="{cx-3}" y2="{cy+3}" stroke="#2457c5" stroke-width="2" stroke-linecap="round"/>'
-    )
-
-_SNOW_FLAKES = _snow_flake(18, 43) + _snow_flake(28, 43) + _snow_flake(38, 43)
-
-_BOLT = (
-    '<polygon points="30,32 24,32 28,40 22,40 32,52 29,42 35,42" '
-    'fill="#ffd733" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/>'
-)
-
-def _wrap_svg(content: str) -> str:
-    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">{content}</svg>'
-
-WEATHER_ICON_SVGS = {
-    "sunny": _svg_uri(_wrap_svg(_SUN_BODY)),
-    "partly-cloudy": _svg_uri(_wrap_svg(
-        '<circle cx="14" cy="16" r="6" fill="#ffd733" stroke="#000" stroke-width="1.5"/>'
-        '<line x1="14" y1="6" x2="14" y2="9" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>'
-        '<line x1="14" y1="23" x2="14" y2="26" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>'
-        '<line x1="4" y1="16" x2="7" y2="16" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>'
-        '<line x1="21" y1="16" x2="24" y2="16" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>'
-        '<line x1="6.9" y1="8.9" x2="9.1" y2="11.1" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>'
-        '<line x1="18.9" y1="20.9" x2="21.1" y2="23.1" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>'
-        + _CLOUD_BODY
-    )),
-    "cloudy": _svg_uri(_wrap_svg(_CLOUD_BODY)),
-    "rain-light": _svg_uri(_wrap_svg(_CLOUD_BODY + _RAIN_DROPS_2)),
-    "rain": _svg_uri(_wrap_svg(_CLOUD_BODY + _RAIN_DROPS_3)),
-    "rain-heavy": _svg_uri(_wrap_svg(_DARK_CLOUD_BODY + _RAIN_DROPS_4)),
-    "snow": _svg_uri(_wrap_svg(_CLOUD_BODY + _SNOW_FLAKES)),
-    "storm": _svg_uri(_wrap_svg(_DARK_CLOUD_BODY + _BOLT)),
+WEATHER_ICON_PATHS = {
+    wtype: os.path.join(_WEATHER_ICONS_DIR, f"{icon}.png")
+    for wtype, icon in WEATHER_TYPE_TO_ICON.items()
 }
 
 
@@ -163,7 +95,7 @@ class LunarCalendar(BasePlugin):
                 raise RuntimeError("Open-Meteo request failure, please check logs.")
 
         holiday_dates = set()
-        if settings.get("displayTaiwanHolidays", "false") == "true":
+        if settings.get("displayTaiwanHolidays", "true") == "true":
             try:
                 holiday_dates = self.fetch_taiwan_holidays(target_month.year)
             except Exception as e:
@@ -182,7 +114,7 @@ class LunarCalendar(BasePlugin):
             "display_weather": settings.get("displayWeather", "true") == "true",
             "temperature_unit": UNIT_LABELS[units],
             "today_weather": weather_by_date.get(today.isoformat()),
-            "weather_icons": WEATHER_ICON_SVGS,
+            "weather_icons": WEATHER_ICON_PATHS,
             "plugin_settings": settings,
         }
 
@@ -222,7 +154,9 @@ class LunarCalendar(BasePlugin):
         cells = []
         for i in range(leading_blanks, 0, -1):
             prev_date = first_day - timedelta(days=i)
-            cells.append({"in_month": False, "solar_day": prev_date.day})
+            cell = self.build_day_cell(prev_date, weather_by_date.get(prev_date.isoformat()), holiday_dates)
+            cell["in_month"] = False
+            cells.append(cell)
 
         for day in range(1, days_in_month + 1):
             current_date = date(year, month, day)
@@ -232,7 +166,9 @@ class LunarCalendar(BasePlugin):
         trailing = (7 - len(cells) % 7) % 7
         for i in range(1, trailing + 1):
             next_date = last_day + timedelta(days=i)
-            cells.append({"in_month": False, "solar_day": next_date.day})
+            cell = self.build_day_cell(next_date, weather_by_date.get(next_date.isoformat()), holiday_dates)
+            cell["in_month"] = False
+            cells.append(cell)
 
         return [cells[i:i + 7] for i in range(0, len(cells), 7)]
 
@@ -268,11 +204,13 @@ class LunarCalendar(BasePlugin):
         forecast = {}
         for i, day in enumerate(times):
             code = weather_codes[i] if i < len(weather_codes) else 0
+            high = high_temps[i] if i < len(high_temps) else None
+            low = low_temps[i] if i < len(low_temps) else None
             forecast[day] = {
                 "type": self.map_weather_code_to_type(code),
                 "label": self.map_weather_code_to_label(code),
-                "high": round(high_temps[i]) if i < len(high_temps) else None,
-                "low": round(low_temps[i]) if i < len(low_temps) else None,
+                "high": round(high) if high is not None else None,
+                "low": round(low) if low is not None else None,
             }
         return forecast
 
