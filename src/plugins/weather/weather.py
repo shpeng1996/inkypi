@@ -51,6 +51,7 @@ UNITS = {
 WEATHER_URL = "https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={long}&units={units}&exclude=minutely&appid={api_key}"
 AIR_QUALITY_URL = "http://api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={long}&appid={api_key}"
 GEOCODING_URL = "http://api.openweathermap.org/geo/1.0/reverse?lat={lat}&lon={long}&limit=1&appid={api_key}"
+IP_GEOLOCATION_URL = "https://ipapi.co/json/"
 
 OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={long}&hourly=weather_code,temperature_2m,precipitation,precipitation_probability,relative_humidity_2m,surface_pressure,visibility&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&current=temperature,windspeed,winddirection,is_day,precipitation,weather_code,apparent_temperature&timezone=auto&models=best_match&forecast_days={forecast_days}"
 OPEN_METEO_AIR_QUALITY_URL = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&longitude={long}&hourly=european_aqi,uv_index,uv_index_clear_sky&timezone=auto"
@@ -72,10 +73,7 @@ class Weather(BasePlugin):
         return template_params
 
     def generate_image(self, settings, device_config):
-        lat = float(settings.get('latitude'))
-        long = float(settings.get('longitude'))
-        if not lat or not long:
-            raise RuntimeError("Latitude and Longitude are required.")
+        lat, long = self.get_coordinates(settings)
 
         units = settings.get('units')
         if not units or units not in ['metric', 'imperial', 'standard']:
@@ -136,6 +134,24 @@ class Weather(BasePlugin):
         if not image:
             raise RuntimeError("Failed to take screenshot, please check logs.")
         return image
+
+    def get_coordinates(self, settings):
+        latitude = settings.get('latitude')
+        longitude = settings.get('longitude')
+
+        if self.is_empty_coordinate(latitude) and self.is_empty_coordinate(longitude):
+            return self.get_ip_location()
+
+        if self.is_empty_coordinate(latitude) or self.is_empty_coordinate(longitude):
+            raise RuntimeError("Latitude and Longitude are required.")
+
+        try:
+            return float(latitude), float(longitude)
+        except (TypeError, ValueError):
+            raise RuntimeError("Latitude and Longitude must be valid numbers.")
+
+    def is_empty_coordinate(self, coordinate):
+        return coordinate is None or str(coordinate).strip() == ""
 
     def parse_weather_data(self, weather_data, aqi_data, tz, units, time_format, lat):
         current = weather_data.get("current")
@@ -737,6 +753,19 @@ class Weather(BasePlugin):
             raise RuntimeError("Failed to retrieve air quality data.")
 
         return response.json()
+
+    def get_ip_location(self):
+        response = requests.get(IP_GEOLOCATION_URL, timeout=30)
+        if not 200 <= response.status_code < 300:
+            logger.error(f"Failed to get IP location: {response.content}")
+            raise RuntimeError("Failed to retrieve location from IP.")
+
+        location_data = response.json()
+        try:
+            return float(location_data.get("latitude")), float(location_data.get("longitude"))
+        except (TypeError, ValueError):
+            logger.error(f"IP location response missing coordinates: {location_data}")
+            raise RuntimeError("Failed to retrieve location from IP.")
 
     def get_location(self, api_key, lat, long):
         url = GEOCODING_URL.format(lat=lat, long=long, api_key=api_key)

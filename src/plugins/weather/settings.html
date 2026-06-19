@@ -169,15 +169,62 @@
         const $mapModal = document.querySelector('#mapModal');
         const $closeMap = document.querySelector('#closeMap');
 
-        let latitude = +$latitude.value;
-        let longitude = +$longitude.value;
-        let zoom = latitude && longitude ? 4.5 : 2.5;
+        let latitude = 0;
+        let longitude = 0;
+        let zoom = 2.5;
         let selectedTitle = 'location';
         let weatherProvider = 'OpenMeteo';
 
         let map, marker;
 
+        function hasCoordinates() {
+            return $latitude.value.trim() !== '' && $longitude.value.trim() !== '';
+        }
+
+        function updateSelectedCoordinates(lat, lng) {
+            latitude = Number(lat);
+            longitude = Number(lng);
+            zoom = latitude || longitude ? 4.5 : 2.5;
+        }
+
+        function setCoordinateInputs(lat, lng) {
+            $latitude.value = lat;
+            $longitude.value = lng;
+            updateSelectedCoordinates(lat, lng);
+
+            if (map && marker) {
+                const position = [latitude, longitude];
+                marker.setLatLng(position);
+                map.setView(position, 4.5);
+            }
+        }
+
+        async function setIpLocationIfEmpty() {
+            if (hasCoordinates()) {
+                updateSelectedCoordinates($latitude.value, $longitude.value);
+                return;
+            }
+
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                if (!response.ok) {
+                    throw new Error(`IP location request failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.latitude === undefined || data.longitude === undefined) {
+                    throw new Error('IP location response missing coordinates');
+                }
+
+                setCoordinateInputs(data.latitude, data.longitude);
+            } catch (error) {
+                console.error('Failed to set weather location from IP:', error);
+                updateSelectedCoordinates($latitude.value, $longitude.value);
+            }
+        }
+
         $openMap.addEventListener('click', () => {
+            updateSelectedCoordinates($latitude.value, $longitude.value);
             openModal('mapModal')
             setTimeout(() => {
                 if (!map) {
@@ -258,5 +305,6 @@
         document.getElementById('weatherProvider').value = weatherProvider;
         document.querySelector(`input[name="titleSelection"][value="${selectedTitle}"]`).checked = true;
         updateTitleOptions(weatherProvider)
+        setIpLocationIfEmpty();
     });
 </script>
